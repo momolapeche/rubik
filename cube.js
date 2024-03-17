@@ -5,7 +5,7 @@ vec3.normalize(lightDir, lightDir)
 
 const tmpVec3 = vec3.create()
 
-const floorCenter = vec3.fromValues(0, -1.5, 0)
+const floorCenter = vec3.fromValues(0, -1, 0)
 const floorNormal = vec3.fromValues(0,  1, 0)
 
 const colors = {
@@ -384,7 +384,9 @@ export class Cube {
             vec3.transformMat4(this.shadowPoints[i], this.basePoints[this.boundingBox[i]], this.transform)
             const tmp = vec3.sub(tmpVec3, this.shadowPoints[i], floorCenter)
             const distanceFromFloor = vec3.dot(tmp, floorNormal)
-            vec3.sub(this.shadowPoints[i], this.shadowPoints[i], vec3.scale(tmpVec3, lightDir, distanceFromFloor))
+            vec3.sub(this.shadowPoints[i], this.shadowPoints[i],
+                vec3.scale(tmpVec3, lightDir, distanceFromFloor / vec3.dot(lightDir, floorNormal))
+            )
         }
 
         // update normals
