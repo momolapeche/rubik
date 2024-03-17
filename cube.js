@@ -361,8 +361,8 @@ export class Cube {
         * @param { mat4 } moveRot
     */
     update(view, moveRot) {
-        const rotX = mat4.fromRotX(mat4.create(), 15 / 180 * Math.PI)
-        const rotY = mat4.fromRotY(mat4.create(), 30 / 180 * Math.PI)
+        const rotX = mat4.fromRotX(mat4.create(), 0 / 180 * Math.PI)
+        const rotY = mat4.fromRotY(mat4.create(), 0 / 180 * Math.PI)
         
         mat4.mul(this.rotation, rotX, rotY)
         mat4.mul(this.rotation, this.rotation, moveRot)
@@ -432,7 +432,7 @@ export class Cube {
         * @param { mat4 } vp
         * @param { mat4 } screenSpaceMat
      */
-    render(ctx, vp, screenSpaceMat) {
+    render(ctx, view, vp, screenSpaceMat) {
         const mvp = mat4.mul(mat4.create(), vp, this.transform)
 
         // projection of the points
@@ -445,6 +445,7 @@ export class Cube {
             tp[2] = Math.floor(tp[2])
         }
 
+        const screenSpaceLightDir = vec3.transformMat3(vec3.create(), lightDir, mat3.fromMat4(view))
         // renders faces
         const points = this.mvpPoints
         for (const face of this.faces) {
@@ -457,7 +458,7 @@ export class Cube {
                 continue
             }
 
-            const lightStrength = 0.5 + 0.5 * Math.max(0, Math.min(1, vec3.dot(normal, lightDir)))
+            const lightStrength = 0.5 + 0.5 * Math.max(0, Math.min(1, vec3.dot(normal, screenSpaceLightDir)))
             ctx.fillStyle = vecToRGB(vec3.scale(vec3.create(), face.color, lightStrength))
 
             const lastPoint = points[face.points[face.points.length - 1]]

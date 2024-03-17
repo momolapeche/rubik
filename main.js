@@ -145,9 +145,13 @@ function main() {
     const moveRotTmp = mat4.create()
     const identityMat = mat4.create()
 
-    const view = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, -1.5))
+    const viewTranslation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, -1.5))
+    const view = mat4.copy(mat4.create(), viewTranslation)
     const viewProjection = mat4.create()
 
+    let rotationLocked = false
+
+    // events
     const buttons = document.querySelectorAll('#buttons-container button')
     buttons.forEach(button => {
         button.addEventListener('click', (e) => {
@@ -159,7 +163,27 @@ function main() {
                 cubes: newMove.createCubesFunc(cubeState),
             }
         })
-        console.log(button.innerHTML)
+    })
+
+
+    canvas.addEventListener('click', (e) => {
+        rotationLocked = !rotationLocked
+    })
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (rotationLocked)
+            return
+        const rect = canvas.getBoundingClientRect()
+        const x = ((e.clientX - rect.x) / rect.width) * 2 - 1
+        const y = 1 - 2 * ((e.clientY - rect.y) / rect.height)
+
+        const rotY = mat4.fromRotY(mat4.create(), x)
+        const rotX = mat4.fromRotX(mat4.create(), -y)
+
+        mat4.mul(view, rotX, rotY)
+        mat4.mul(view, viewTranslation, view)
+
+        console.log(x, y)
     })
 
     let then = 0
@@ -210,7 +234,7 @@ function main() {
             ctx.fillRect(0, 0, canvas.width, canvas.height)
             ctx.globalAlpha = 1
 
-            cubes.forEach(c => c.render(ctx, viewProjection, screenSpaceMat))
+            cubes.forEach(c => c.render(ctx, view, viewProjection, screenSpaceMat))
         }
         else {
             cube.update(view, identityMat)
@@ -222,7 +246,7 @@ function main() {
             ctx.fillRect(0, 0, canvas.width, canvas.height)
             ctx.globalAlpha = 1
 
-            cube.render(ctx, viewProjection, screenSpaceMat)
+            cube.render(ctx, view, viewProjection, screenSpaceMat)
         }
         requestAnimationFrame(frame)
     }
