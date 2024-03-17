@@ -445,7 +445,7 @@ export class Cube {
             tp[2] = Math.floor(tp[2])
         }
 
-        const screenSpaceLightDir = vec3.transformMat3(vec3.create(), lightDir, mat3.fromMat4(view))
+        const screenSpaceLightDir = vec3.transformMat3(vec3.create(), lightDir, mat3.fromMat4(mat3.create(), view))
         // renders faces
         const points = this.mvpPoints
         for (const face of this.faces) {
