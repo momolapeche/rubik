@@ -227,7 +227,7 @@ function main() {
 
         const moveMat = mat4.create()
         if (currentMove) {
-            currentMove.progress += deltaTime * 0.2
+            currentMove.progress += deltaTime * 2
             const moveAngle = smoothstep(0, 1, currentMove.progress) * Math.PI / 2 * currentMove.move.quarterTurns
             currentMove.move.matRotFunc(moveMat, moveAngle)
 
