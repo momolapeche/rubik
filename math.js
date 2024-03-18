@@ -700,13 +700,44 @@ export const mat4 = {
 
         o[8] = 0
         o[9] = 0
-        o[10] = far * nf
+        o[10] = (far + near) * nf
         o[11] = -1
 
         o[12] = 0
         o[13] = 0
-        o[14] = far * near * nf
+        o[14] = 2 * far * near * nf
         o[15] = 0
+
+        return o
+    },
+
+    /**
+    * @param { mat4 } o
+    * @param { number } h
+    * @param { number } v
+    *
+    * @returns { mat4 }
+    */
+    orthographic(o, h, v) {
+        o[0] = 1 / h
+        o[1] = 0
+        o[2] = 0
+        o[3] = 0
+
+        o[4] = 0
+        o[5] = 1 / v
+        o[6] = 0
+        o[7] = 0
+
+        o[8] = 0
+        o[9] = 0
+        o[10] = 1
+        o[11] = 0
+
+        o[12] = 0
+        o[13] = 0
+        o[14] = 0
+        o[15] = 1
 
         return o
     },

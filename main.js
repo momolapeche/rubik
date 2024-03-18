@@ -1,4 +1,4 @@
-import { quarterTurnRotations } from "./cubeState.js"
+import { quarterTurnRotations } from "./discreteRotations.js"
 import { CubeModel } from "./faceModel.js"
 import { mat3, mat4, vec3 } from "./math.js"
 import { Model } from "./renderer.js"
@@ -29,7 +29,7 @@ function enableButtons() {
  */
 function createScreenSpaceMatrix(width, height) {
     const mat = mat4.create()
-    const s = height / 2 * .3
+    const s = height / 2
     const scale = mat4.fromScale(mat4.create(), vec3.fromValues(s, -s, s))
     const offset = mat4.fromTranslation(mat4.create(), vec3.fromValues(
         width / 2,
@@ -43,7 +43,6 @@ function createScreenSpaceMatrix(width, height) {
 }
 
 function createMove(axis, layerStart, layerEnd, quarterTurns) {
-    console.log(quarterTurnRotations)
     return {
         axis,
         layerStart,
@@ -104,14 +103,6 @@ const moves = {
     "B2": createMove('z', 0, 2,  2),
 }
 
-const faceColors = [
-    vec3.fromValues(1, 0, 0),
-    vec3.fromValues(0, 1, 1),
-    vec3.fromValues(0, 1, 0),
-    vec3.fromValues(1, 0, 1),
-    vec3.fromValues(0, 0, 1),
-    vec3.fromValues(1, 1, 0),
-]
 const black = vec3.fromValues(0, 0, 0)
 
 function main() {
@@ -120,14 +111,18 @@ function main() {
     canvas.height = 512
     const ctx = canvas.getContext('2d')
 
+    const fovy = 90 / 180 * Math.PI
     const screenSpaceMat = createScreenSpaceMatrix(canvas.width, canvas.height)
-    const projection = mat4.perspective(mat4.create(), 35 / 180 * Math.PI, canvas.width / canvas.height, 0.01, 100)
+    const projection = mat4.perspective(mat4.create(), fovy, canvas.width / canvas.height, 0.01, 100)
+    //const projection = mat4.orthographic(mat4.create(), 3, 3)
 
     let currentMove = null
 
     const viewTranslation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, -5))
     const view = mat4.copy(mat4.create(), viewTranslation)
 
+    let cameraRotX = 0
+    let cameraRotY = 0
     let rotationLocked = false
 
     // events
@@ -152,10 +147,12 @@ function main() {
         const x = ((e.clientX - rect.x) / rect.width) * 2 - 1
         const y = 1 - 2 * ((e.clientY - rect.y) / rect.height)
 
-        const rotY = mat4.fromRotY(mat4.create(), x * 1)
-        const rotX = mat4.fromRotX(mat4.create(), -y * 0.6)
+        cameraRotY = x * 1
+        const mY = mat4.fromRotY(mat4.create(), cameraRotY)
+        cameraRotX = -y * 0.6
+        const mX = mat4.fromRotX(mat4.create(), cameraRotX)
 
-        mat4.mul(view, rotX, rotY)
+        mat4.mul(view, mX, mY)
         mat4.mul(view, viewTranslation, view)
     })
 
@@ -220,9 +217,13 @@ function main() {
         
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        // Background
-        ctx.fillStyle = '#a0a0a0'
+        // floor
+        ctx.fillStyle = '#c0c0c0'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // sky
+        ctx.fillStyle = '#c0c0e0'
+        ctx.fillRect(0, 0, canvas.width, canvas.height / 2 - canvas.height * Math.tan(cameraRotX) / Math.tan(fovy / 2) / 2)
 
         const moveMat = mat4.create()
         if (currentMove) {
@@ -231,7 +232,6 @@ function main() {
             currentMove.move.matRotFunc(moveMat, moveAngle)
 
             if (currentMove.progress >= 1) {
-                console.log(currentMove)
                 const m = mat4.fromMat3(mat4.create(), currentMove.move.rotationMat)
                 cubons.forEach(c => {
                     if (
