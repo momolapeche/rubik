@@ -43,6 +43,22 @@ export const vec3 = {
     },
 
     /**
+    * @param { vec3 } v
+    * @returns { number }
+    */
+    length(v) {
+        return Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
+    },
+
+    /**
+    * @param { vec3 } v
+    * @returns { number }
+    */
+    lengthSquared(v) {
+        return v[0]*v[0] + v[1]*v[1] + v[2]*v[2]
+    },
+
+    /**
     * @param { vec3 } o
     * @param { vec3 } v
     * @returns { vec3 }
@@ -101,6 +117,24 @@ export const vec3 = {
     */
     dot(a, b) {
         return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
+    },
+
+    /**
+    * @param { vec3 } o
+    * @param { vec3 } a
+    * @param { vec3 } b
+    * @returns { vec3 }
+    */
+    cross(o, a, b) {
+        const x = a[1] * b[2] - a[2] * b[1]
+        const y = a[2] * b[0] - a[0] * b[2]
+        const z = a[0] * b[1] - a[1] * b[0]
+
+        o[0] = x
+        o[1] = y
+        o[2] = z
+
+        return o
     },
 
     /**
@@ -362,6 +396,31 @@ export const mat4 = {
 
     /**
     * @param { mat4 } o
+    * @returns { mat4 }
+    */
+    identity(o) {
+        o[0] = 1
+        o[1] = 0
+        o[2] = 0
+        o[3] = 0
+        o[4] = 0
+        o[5] = 1
+        o[6] = 0
+        o[7] = 0
+        o[8] = 0
+        o[9] = 0
+        o[10] = 1
+        o[11] = 0
+        o[12] = 0
+        o[13] = 0
+        o[14] = 0
+        o[15] = 1
+
+        return o
+    },
+
+    /**
+    * @param { mat4 } o
     * @param { mat4 } a
     * @param { mat4 } b
     * @returns { mat4 }
@@ -420,6 +479,32 @@ export const mat4 = {
         o[13] = a10*b03 + a11*b13 + a12*b23 + a13*b33
         o[14] = a20*b03 + a21*b13 + a22*b23 + a23*b33
         o[15] = a30*b03 + a31*b13 + a32*b23 + a33*b33
+
+        return o
+    },
+
+    /**
+    * @param { mat4 } o
+    * @param { mat4 } m
+    * @returns { mat4 }
+    */
+    fromMat3(o, m) {
+        o[ 0] = m[0]
+        o[ 1] = m[1]
+        o[ 2] = m[2]
+        o[ 3] = 0
+        o[ 4] = m[3]
+        o[ 5] = m[4]
+        o[ 6] = m[5]
+        o[ 7] = 0
+        o[ 8] = m[6]
+        o[ 9] = m[7]
+        o[10] = m[8]
+        o[11] = 0
+        o[12] = 0
+        o[13] = 0
+        o[14] = 0
+        o[15] = 1
 
         return o
     },
