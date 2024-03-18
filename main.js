@@ -104,6 +104,16 @@ const moves = {
     "B2": createMove('z', 0, 2,  2),
 }
 
+const faceColors = [
+    vec3.fromValues(1, 0, 0),
+    vec3.fromValues(0, 1, 1),
+    vec3.fromValues(0, 1, 0),
+    vec3.fromValues(1, 0, 1),
+    vec3.fromValues(0, 0, 1),
+    vec3.fromValues(1, 1, 0),
+]
+const black = vec3.fromValues(0, 0, 0)
+
 function main() {
     const canvas = document.querySelector('canvas')
     canvas.width = 512
@@ -132,12 +142,9 @@ function main() {
             }
         })
     })
-
-
     canvas.addEventListener('click', () => {
         rotationLocked = !rotationLocked
     })
-
     canvas.addEventListener('mousemove', (e) => {
         if (rotationLocked)
             return
@@ -145,13 +152,16 @@ function main() {
         const x = ((e.clientX - rect.x) / rect.width) * 2 - 1
         const y = 1 - 2 * ((e.clientY - rect.y) / rect.height)
 
-        const rotY = mat4.fromRotY(mat4.create(), x * 3)
-        const rotX = mat4.fromRotX(mat4.create(), -y * 3)
+        const rotY = mat4.fromRotY(mat4.create(), x * 1)
+        const rotX = mat4.fromRotX(mat4.create(), -y * 0.6)
 
         mat4.mul(view, rotX, rotY)
         mat4.mul(view, viewTranslation, view)
     })
 
+    const lightDir = vec3.fromValues(1, 1, 1)
+    vec3.normalize(lightDir, lightDir)
+    const floorHeight = -3
 
     const cubons = []
     for (let i = 0; i < 27; i++) {
@@ -164,7 +174,31 @@ function main() {
         const scale = mat4.fromScale(mat4.create(), vec3.fromValues(s,s,s))
         mat4.mul(transform, translation, scale)
         const model = new Model(CubeModel.points)
-        CubeModel.faces.forEach(f => model.addFace(f.indices, f.normal, f.color))
+        CubeModel.blackFaces.forEach(f => model.addFace(f.indices, f.normal, f.color))
+        {
+            const f = CubeModel.coloredFaces[0]
+            model.addFace(f.indices, f.normal, z === 2 ? f.color : black)
+        }
+        {
+            const f = CubeModel.coloredFaces[1]
+            model.addFace(f.indices, f.normal, z === 0 ? f.color : black)
+        }
+        {
+            const f = CubeModel.coloredFaces[2]
+            model.addFace(f.indices, f.normal, y === 2 ? f.color : black)
+        }
+        {
+            const f = CubeModel.coloredFaces[3]
+            model.addFace(f.indices, f.normal, y === 0 ? f.color : black)
+        }
+        {
+            const f = CubeModel.coloredFaces[4]
+            model.addFace(f.indices, f.normal, x === 2 ? f.color : black)
+        }
+        {
+            const f = CubeModel.coloredFaces[5]
+            model.addFace(f.indices, f.normal, x === 0 ? f.color : black)
+        }
         cubons.push({
             model,
             transform,
@@ -187,7 +221,7 @@ function main() {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
         // Background
-        ctx.fillStyle = '#aaa'
+        ctx.fillStyle = '#a0a0a0'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
         const moveMat = mat4.create()
@@ -228,11 +262,11 @@ function main() {
             else {
                 mat4.copy(m.totalTransform, m.transform)
             }
-            m.model.transformPoints(m.totalTransform, view, projection, screenSpaceMat)
+            m.model.transformPoints(m.totalTransform, view, projection, screenSpaceMat, lightDir, floorHeight)
         })
 
         cubons.forEach(m => {
-            m.model.renderShadow(ctx, '#000000')
+            m.model.renderShadow(ctx, '#505050')
         })
 
         cubons.forEach(m => {
@@ -245,7 +279,7 @@ function main() {
         cubons.forEach((m, i) => {
             //const col = '#' + Math.floor(i / 27 * 256).toString(16).padStart(2, '0') + '0000'
             m.model.render(
-                ctx, m.totalTransform, view, projection, screenSpaceMat
+                ctx, m.totalTransform, view, projection, screenSpaceMat, lightDir
                 //, col
             )
         })

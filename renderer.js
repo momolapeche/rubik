@@ -4,7 +4,7 @@ const tmpVec3 = vec3.create()
 const tmpMat4 = mat4.create()
 const tmpMat3 = mat3.create()
 
-/** @typedef {{ points: vec3[], shadowPoints: vec3[], normal: vec3, normalTestPoint: vec3, color: string }} Face */
+/** @typedef {{ points: vec3[], shadowPoints: vec3[], normal: vec3, normalTestPoint: vec3, color: vec3 }} Face */
 
 export class Model {
     /** @type { vec3[] } */
@@ -35,7 +35,7 @@ export class Model {
     /**
         * @param { number[] } indices
         * @param { vec3 } normal
-        * @param { string } color
+        * @param { vec3 } color
     */
     addFace(indices, normal, color) {
         this.faces.push({
@@ -53,7 +53,7 @@ export class Model {
         * @param { mat4 } projection
         * @param { mat4 } screenSpaceMatrix
     */
-    transformPoints(transform, view, projection, screenSpaceMatrix) {
+    transformPoints(transform, view, projection, screenSpaceMatrix, lightDir, floorHeight) {
         for (let i = 0; i < this.points.length; i++) {
             vec3.transformMat4(this.transformedPoints[i], this.points[i], transform)
         }
@@ -66,10 +66,6 @@ export class Model {
         for (let i = 0; i < this.points.length; i++) {
             vec3.transformMat4(this.screenSpacePoints[i], this.screenSpacePoints[i], screenSpaceMatrix)
         }
-
-        const lightDir = vec3.fromValues(1, 1, 1)
-        vec3.normalize(lightDir, lightDir)
-        const floorHeight = -3
 
         for (let i = 0; i < this.points.length; i++) {
             const p = this.transformedPoints[i]
@@ -108,7 +104,7 @@ export class Model {
         * @param { mat4 } projection
         * @param { mat4 } screenSpaceMatrix
     */
-    render(ctx, transform, view, projection, screenSpaceMatrix, colorOverride) {
+    render(ctx, transform, view, projection, screenSpaceMatrix, lightDir, colorOverride) {
         for (const face of this.faces) {
             const points = face.points
 
@@ -120,7 +116,24 @@ export class Model {
                 continue
             }
 
-            ctx.fillStyle = colorOverride ?? face.color
+            const m3 = mat3.fromMat4(tmpMat3, transform)
+            const worldSpaceNormal = vec3.transformMat3(tmpVec3, face.normal, m3)
+            vec3.normalize(worldSpaceNormal, worldSpaceNormal)
+            const lightStrength = Math.min(1,
+                0.5 + Math.max(0, Math.min(1, vec3.dot(worldSpaceNormal, lightDir)))
+            )
+            if (colorOverride === undefined) {
+                ctx.fillStyle = `rgb(${
+                    Math.min(255, Math.floor(face.color[0] * lightStrength * 256)).toString()
+                }, ${
+                    Math.min(255, Math.floor(face.color[1] * lightStrength * 256)).toString()
+                }, ${
+                    Math.min(255, Math.floor(face.color[2] * lightStrength * 256)).toString()
+                })`
+            }
+            else {
+                ctx.fillStyle = colorOverride
+            }
 
             const lastPoint = points[points.length - 1]
 
@@ -133,3 +146,9 @@ export class Model {
         }
     }
 }
+
+
+
+
+
+
