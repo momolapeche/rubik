@@ -65,6 +65,9 @@ function createMove(axis, layerStart, layerEnd, quarterTurns) {
 }
 
 const moves = {
+    "X":  createMove('x', 0, 3, -1),
+    "Y":  createMove('y', 0, 3, -1),
+    "Z":  createMove('z', 0, 3, -1),
     "R":  createMove('x', 2, 3, -1),
     "R'": createMove('x', 2, 3,  1),
     "R2": createMove('x', 2, 3, -2),
