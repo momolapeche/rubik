@@ -14,6 +14,17 @@ function smoothstep(a, b, s) {
     return 3 * x*x - 2 * x*x*x
 }
 
+function axisNameToIndex(axis) {
+    switch (axis) {
+        case 'x':
+            return 0
+        case 'y':
+            return 1
+        case 'z':
+            return 2
+    }
+}
+
 function disableButtons() {
     document.querySelectorAll('#buttons-container button').forEach(b => b.disabled = true)
 }
@@ -54,53 +65,53 @@ function createMove(axis, layerStart, layerEnd, quarterTurns) {
 }
 
 const moves = {
-    "r":  createMove('x', 2, 3, -1),
-    "r'": createMove('x', 2, 3,  1),
-    "r2": createMove('x', 2, 3, -2),
-    "R":  createMove('x', 1, 3, -1),
-    "R'": createMove('x', 1, 3,  1),
-    "R2": createMove('x', 1, 3, -2),
-    "m":  createMove('x', 1, 2, -1),
-    "m'": createMove('x', 1, 2,  1),
-    "m2": createMove('x', 1, 2, -2),
-    "l":  createMove('x', 0, 1,  1),
-    "l'": createMove('x', 0, 1, -1),
-    "l2": createMove('x', 0, 1,  2),
-    "L":  createMove('x', 0, 2,  1),
-    "L'": createMove('x', 0, 2, -1),
-    "L2": createMove('x', 0, 2,  2),
+    "R":  createMove('x', 2, 3, -1),
+    "R'": createMove('x', 2, 3,  1),
+    "R2": createMove('x', 2, 3, -2),
+    "r":  createMove('x', 1, 3, -1),
+    "r'": createMove('x', 1, 3,  1),
+    "r2": createMove('x', 1, 3, -2),
+    "M":  createMove('x', 1, 2, -1),
+    "M'": createMove('x', 1, 2,  1),
+    "M2": createMove('x', 1, 2, -2),
+    "L":  createMove('x', 0, 1,  1),
+    "L'": createMove('x', 0, 1, -1),
+    "L2": createMove('x', 0, 1,  2),
+    "l":  createMove('x', 0, 2,  1),
+    "l'": createMove('x', 0, 2, -1),
+    "l2": createMove('x', 0, 2,  2),
 
-    "u":  createMove('y', 2, 3, -1),
-    "u'": createMove('y', 2, 3,  1),
-    "u2": createMove('y', 2, 3, -2),
-    "U":  createMove('y', 1, 3, -1),
-    "U'": createMove('y', 1, 3,  1),
-    "U2": createMove('y', 1, 3, -2),
-    "e":  createMove('y', 1, 2, -1),
-    "e'": createMove('y', 1, 2,  1),
-    "e2": createMove('y', 1, 2, -2),
-    "d":  createMove('y', 0, 1,  1),
-    "d'": createMove('y', 0, 1, -1),
-    "d2": createMove('y', 0, 1,  2),
-    "D":  createMove('y', 0, 2,  1),
-    "D'": createMove('y', 0, 2, -1),
-    "D2": createMove('y', 0, 2,  2),
+    "U":  createMove('y', 2, 3, -1),
+    "U'": createMove('y', 2, 3,  1),
+    "U2": createMove('y', 2, 3, -2),
+    "u":  createMove('y', 1, 3, -1),
+    "u'": createMove('y', 1, 3,  1),
+    "u2": createMove('y', 1, 3, -2),
+    "E":  createMove('y', 1, 2, -1),
+    "E'": createMove('y', 1, 2,  1),
+    "E2": createMove('y', 1, 2, -2),
+    "D":  createMove('y', 0, 1,  1),
+    "D'": createMove('y', 0, 1, -1),
+    "D2": createMove('y', 0, 1,  2),
+    "d":  createMove('y', 0, 2,  1),
+    "d'": createMove('y', 0, 2, -1),
+    "d2": createMove('y', 0, 2,  2),
 
-    "f":  createMove('z', 2, 3, -1),
-    "f'": createMove('z', 2, 3,  1),
-    "f2": createMove('z', 2, 3, -2),
-    "F":  createMove('z', 1, 3, -1),
-    "F'": createMove('z', 1, 3,  1),
-    "F2": createMove('z', 1, 3, -2),
-    "s":  createMove('z', 1, 2, -1),
-    "s'": createMove('z', 1, 2,  1),
-    "s2": createMove('z', 1, 2, -2),
-    "b":  createMove('z', 0, 1,  1),
-    "b'": createMove('z', 0, 1, -1),
-    "b2": createMove('z', 0, 1,  2),
-    "B":  createMove('z', 0, 2,  1),
-    "B'": createMove('z', 0, 2, -1),
-    "B2": createMove('z', 0, 2,  2),
+    "F":  createMove('z', 2, 3, -1),
+    "F'": createMove('z', 2, 3,  1),
+    "F2": createMove('z', 2, 3, -2),
+    "f":  createMove('z', 1, 3, -1),
+    "f'": createMove('z', 1, 3,  1),
+    "f2": createMove('z', 1, 3, -2),
+    "S":  createMove('z', 1, 2, -1),
+    "S'": createMove('z', 1, 2,  1),
+    "S2": createMove('z', 1, 2, -2),
+    "B":  createMove('z', 0, 1,  1),
+    "B'": createMove('z', 0, 1, -1),
+    "B2": createMove('z', 0, 1,  2),
+    "b":  createMove('z', 0, 2,  1),
+    "b'": createMove('z', 0, 2, -1),
+    "b2": createMove('z', 0, 2,  2),
 }
 
 const black = vec3.fromValues(0, 0, 0)
@@ -223,7 +234,8 @@ function main() {
 
         // sky
         ctx.fillStyle = '#c0c0e0'
-        ctx.fillRect(0, 0, canvas.width, canvas.height / 2 - canvas.height * Math.tan(cameraRotX) / Math.tan(fovy / 2) / 2)
+        const horizon = Math.tan(cameraRotX) / Math.tan(fovy / 2)
+        ctx.fillRect(0, 0, canvas.width, (canvas.height - canvas.height * horizon) / 2)
 
         const moveMat = mat4.create()
         if (currentMove) {
@@ -252,6 +264,7 @@ function main() {
             }
         }
 
+        // points projection
         cubons.forEach(m => {
             if (currentMove &&
                 m.position[currentMove.move.axis] >= currentMove.move.layerStart &&
@@ -265,24 +278,66 @@ function main() {
             m.model.transformPoints(m.totalTransform, view, projection, screenSpaceMat, lightDir, floorHeight)
         })
 
+        // shadow
         cubons.forEach(m => {
             m.model.renderShadow(ctx, '#505050')
         })
 
+        // painter' algorithm
         cubons.forEach(m => {
             const tmp = vec3.create()
             vec3.transformMat4(tmp, m.center, m.totalTransform)
             vec3.transformMat4(tmp, tmp, view)
             m.distanceToCamera = vec3.length(tmp)
         })
-        cubons.sort((a, b) => b.distanceToCamera - a.distanceToCamera)
-        cubons.forEach((m, i) => {
+        const groups = []
+        if (currentMove) {
+            groups.push([], [], [])
+
+            const v0 = vec3.create()
+            v0[axisNameToIndex(currentMove.move.axis)] = currentMove.move.layerStart / 2 - 1.5
+            vec3.transformMat4(v0, v0, view)
+            const v1 = vec3.create()
+            v1[axisNameToIndex(currentMove.move.axis)] = (currentMove.move.layerEnd + currentMove.move.layerStart) / 2 - 1.5
+            vec3.transformMat4(v1, v1, view)
+            const v2 = vec3.create()
+            v2[axisNameToIndex(currentMove.move.axis)] = (currentMove.move.layerEnd + 3) / 2 - 1.5
+            vec3.transformMat4(v2, v2, view)
+
+            const order = [
+                { dist: vec3.length(v0), index: 0, },
+                { dist: vec3.length(v1), index: 1, },
+                { dist: vec3.length(v2), index: 2, },
+            ]
+            order.sort((a, b) => b.dist - a.dist)
+
+            for (let i = 0; i < cubons.length; i++) {
+                const cubon = cubons[i]
+                const cubonLayer = cubon.position[currentMove.move.axis]
+                if (cubonLayer < currentMove.move.layerStart) {
+                    groups[order[0].index].push(cubon)
+                }
+                else if (cubonLayer >= currentMove.move.layerEnd) {
+                    groups[order[2].index].push(cubon)
+                }
+                else {
+                    groups[order[1].index].push(cubon)
+                }
+            }
+        }
+        else {
+            groups.push(cubons.slice())
+        }
+        groups.forEach(cubons => cubons.sort((a, b) => b.distanceToCamera - a.distanceToCamera))
+
+        // rendering
+        groups.forEach(cubons => cubons.forEach((m, i) => {
             //const col = '#' + Math.floor(i / 27 * 256).toString(16).padStart(2, '0') + '0000'
             m.model.render(
                 ctx, m.totalTransform, view, projection, screenSpaceMat, lightDir
                 //, col
             )
-        })
+        }))
 
         requestAnimationFrame(frame)
     }
