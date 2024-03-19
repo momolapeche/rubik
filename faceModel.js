@@ -6,11 +6,11 @@ const c = 0.7
 
 const black   = vec3.fromValues(0, 0, 0)
 const red     = vec3.fromValues(1, 0, 0)
-const cyan    = vec3.fromValues(0, 1, 1)
-const green   = vec3.fromValues(0, 1, 0)
-const magenta = vec3.fromValues(1, 0, 1)
-const blue    = vec3.fromValues(0, 0, 1)
-const yellow  = vec3.fromValues(1, 1, 0)
+const cyan    = vec3.fromValues(1, 0.5, 0)
+const green   = vec3.fromValues(1, 1, 0)
+const magenta = vec3.fromValues(1, 1, 1)
+const blue    = vec3.fromValues(0, 1, 0)
+const yellow  = vec3.fromValues(0, 0, 1)
 
 const points = [
     vec3.fromValues(-c, -b, 1),
