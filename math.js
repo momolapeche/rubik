@@ -1,3 +1,5 @@
+// basically copied from https://glmatrix.net/
+
 /** @typedef { Float32Array | Int8Array | Int16Array | Int32Array } vec3 */
 
 export const vec3 = {
@@ -178,6 +180,51 @@ export const vec3 = {
         return o
     },
 
+    /** entierement copie de glMatrix
+    * @param { vec3 } o
+    * @param { vec3 } v
+    * @param { quat } q
+    * @returns { vec3 }
+    */
+    transformQuat(out, a, q) {
+        // benchmarks: https://jsperf.com/quaternion-transform-vec3-implementations-fixed
+
+        let qx = q[0],
+            qy = q[1],
+            qz = q[2],
+            qw = q[3];
+        let x = a[0],
+            y = a[1],
+            z = a[2];
+
+        // var qvec = [qx, qy, qz];
+        // var uv = vec3.cross([], qvec, a);
+        let uvx = qy * z - qz * y,
+            uvy = qz * x - qx * z,
+            uvz = qx * y - qy * x;
+        // var uuv = vec3.cross([], qvec, uv);
+        let uuvx = qy * uvz - qz * uvy,
+            uuvy = qz * uvx - qx * uvz,
+            uuvz = qx * uvy - qy * uvx;
+
+        // vec3.scale(uv, uv, 2 * w);
+        let w2 = qw * 2;
+        uvx *= w2;
+        uvy *= w2;
+        uvz *= w2;
+
+        // vec3.scale(uuv, uuv, 2);
+        uuvx *= 2;
+        uuvy *= 2;
+        uuvz *= 2;
+
+        // return vec3.add(out, a, vec3.add(out, uv, uuv));
+        out[0] = x + uvx + uuvx;
+        out[1] = y + uvy + uuvy;
+        out[2] = z + uvz + uuvz;
+        return out;
+    },
+
     /**
     * @param { vec3 } o
     * @param { vec3 } v
@@ -230,8 +277,96 @@ export const vec3 = {
     },
 }
 
+/*
+ijk = i² = j² = k² = -1
 
-/** @typedef { Float32Array | Int8Array | Int16Array | Int32Array } mat3 */
+ij = k
+ik = -j
+jk = i
+ji = -k
+ki = j
+kj = -i
+
+(a + bi + cj + dk) * (e + fi + gj + hk)
+  ae +  afi +  agj +  ahk +
+ bei -   bf +  bgk -  bhj +
+ cej -  cfk -   cg +  chi +
+ dek +  dfj -  dgi -   dh
+
+w = ae - bf - cg - dh
+x = be + af + ch - dg
+y = ce + ag - bh + df
+z = de + ah + bg - cf
+
+a = a.w
+b = a.x
+c = a.y
+d = a.z
+e = b.w
+f = b.x
+g = b.y
+h = b.z
+
+w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+x = a.x * b.w + a.w * b.x + a.y * b.z - a.z * b.y
+y = a.y * b.w + a.w * b.y + a.z * b.x - a.x * b.z
+z = a.z * b.w + a.w * b.z + a.x * b.y - a.y * b.x
+
+w   = a.w * a.w - dot(a.xyz, b.xyz)
+xyz = cross(a, b) + a.w * b.xyz + b.w * a.xyz
+*/
+
+/** @typedef { ArrayLike } quat */
+export const quat = {
+    /** @returns { quat } */
+    create() {
+        return new Float32Array([0, 0, 0, 1])
+    },
+
+    /**
+    * @param { quat } o
+    * @param { vec3 } v
+    * @param { number } a
+    * @returns { quat }
+    */
+    setAxisAngle(o, v, a) {
+        const s = Math.sin(a / 2)
+
+        o[0] = v[0] * s
+        o[1] = v[1] * s
+        o[2] = v[2] * s
+        o[3] = Math.cos(a / 2)
+
+        return o
+    },
+
+    /**
+    * @param { quat } o
+    * @param { quat } a
+    * @param { quat } b
+    * @returns { quat }
+    */
+    mul(o, a, b) {
+        const ax = a[0]
+        const ay = a[1]
+        const az = a[2]
+        const aw = a[3]
+        const bx = b[0]
+        const by = b[1]
+        const bz = b[2]
+        const bw = b[3]
+
+        o[0] = aw * bx + ax * bw + ay * bz - az * by
+        o[1] = aw * by + ay * bw + az * bx - ax * bz
+        o[2] = aw * bz + az * bw + ax * by - ay * bx
+        o[3] = aw * bw - ax * bx - ay * by - az * bz
+
+        return o
+    },
+}
+
+
+/** @typedef { ArrayLike } mat3 */
 export const mat3 = {
     /** @returns { mat3 } */
     create() {
@@ -282,6 +417,43 @@ export const mat3 = {
         o[8] = m[10]
 
         return o
+    },
+
+    /**
+    * @param { mat3 } out
+    * @param { quat } q
+    * @returns { mat3 }
+    */
+    fromQuat(out, q) {
+        const x = q[0],
+            y = q[1],
+            z = q[2],
+            w = q[3];
+
+        const x2 = x + x;
+        const y2 = y + y;
+        const z2 = z + z;
+        const xx = x * x2;
+        const yx = y * x2;
+        const yy = y * y2;
+        const zx = z * x2;
+        const zy = z * y2;
+        const zz = z * z2;
+        const wx = w * x2;
+        const wy = w * y2;
+        const wz = w * z2;
+
+        out[0] = 1 - yy - zz;
+        out[1] = yx + wz;
+        out[2] = zx - wy;
+        out[3] = yx - wz;
+        out[4] = 1 - xx - zz;
+        out[5] = zy + wx;
+        out[6] = zx + wy;
+        out[7] = zy - wx;
+        out[8] = 1 - xx - yy;
+
+        return out;
     },
 
     /**
@@ -483,6 +655,116 @@ export const mat4 = {
         return o
     },
 
+
+    /** Copie de glMatrix
+    * @param { mat4 } out
+    * @param { mat4 } a
+    * @returns { mat4 }
+    */
+    invert(out, a) {
+        const a00 = a[0],
+            a01 = a[1],
+            a02 = a[2],
+            a03 = a[3];
+        const a10 = a[4],
+            a11 = a[5],
+            a12 = a[6],
+            a13 = a[7];
+        const a20 = a[8],
+            a21 = a[9],
+            a22 = a[10],
+            a23 = a[11];
+        const a30 = a[12],
+            a31 = a[13],
+            a32 = a[14],
+            a33 = a[15];
+
+        const b00 = a00 * a11 - a01 * a10;
+        const b01 = a00 * a12 - a02 * a10;
+        const b02 = a00 * a13 - a03 * a10;
+        const b03 = a01 * a12 - a02 * a11;
+        const b04 = a01 * a13 - a03 * a11;
+        const b05 = a02 * a13 - a03 * a12;
+        const b06 = a20 * a31 - a21 * a30;
+        const b07 = a20 * a32 - a22 * a30;
+        const b08 = a20 * a33 - a23 * a30;
+        const b09 = a21 * a32 - a22 * a31;
+        const b10 = a21 * a33 - a23 * a31;
+        const b11 = a22 * a33 - a23 * a32;
+
+        // Calculate the determinant
+        let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+        if (!det) {
+            return null;
+        }
+
+        det = 1.0 / det;
+
+        out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+        out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+        out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+        out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+        out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+        out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+        out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+        out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+        out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+        out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+        out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+        out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+        out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+        out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+        out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+        out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+
+        return out;
+    },
+
+    /**
+    * @param { mat4 } out
+    * @param { quat } q
+    * @returns { mat4 }
+    */
+    fromQuat(out, q) {
+        const x = q[0],
+            y = q[1],
+            z = q[2],
+            w = q[3];
+
+        const x2 = x + x;
+        const y2 = y + y;
+        const z2 = z + z;
+        const xx = x * x2;
+        const yx = y * x2;
+        const yy = y * y2;
+        const zx = z * x2;
+        const zy = z * y2;
+        const zz = z * z2;
+        const wx = w * x2;
+        const wy = w * y2;
+        const wz = w * z2;
+
+        out[0] = 1 - yy - zz;
+        out[1] = yx + wz;
+        out[2] = zx - wy;
+        out[3] = 0;
+        out[4] = yx - wz;
+        out[5] = 1 - xx - zz;
+        out[6] = zy + wx;
+        out[7] = 0;
+        out[8] = zx + wy;
+        out[9] = zy - wx;
+        out[10] = 1 - xx - yy;
+        out[11] = 0;
+        out[12] = 0;
+        out[13] = 0;
+        out[14] = 0;
+        out[15] = 1;
+
+        return out;
+    },
+
     /**
     * @param { mat4 } o
     * @param { mat4 } m
@@ -672,6 +954,56 @@ export const mat4 = {
         o[15] = 1
 
         return o
+    },
+
+    /**
+    * @param { mat4 } o
+    * @param { quat } q
+    * @param { vec3 } t
+    * @param { vec3 } s
+    * @returns { mat4 }
+    */
+    fromRotationTranslationScale(o, q, t, s) {
+        const x = q[0],
+            y = q[1],
+            z = q[2],
+            w = q[3];
+
+        const x2 = x + x;
+        const y2 = y + y;
+        const z2 = z + z;
+        const xx = x * x2;
+        const yx = y * x2;
+        const yy = y * y2;
+        const zx = z * x2;
+        const zy = z * y2;
+        const zz = z * z2;
+        const wx = w * x2;
+        const wy = w * y2;
+        const wz = w * z2;
+
+        const sx = s[0]
+        const sy = s[1]
+        const sz = s[2]
+
+        o[0] = (1 - yy - zz) * sx;
+        o[1] = (yx + wz) * sx;
+        o[2] = (zx - wy) * sx;
+        o[3] = 0;
+        o[4] = (yx - wz) * sy;
+        o[5] = (1 - xx - zz) * sy;
+        o[6] = (zy + wx) * sy;
+        o[7] = 0;
+        o[8] = (zx + wy) * sz;
+        o[9] = (zy - wx) * sz;
+        o[10] = (1 - xx - yy) * sz;
+        o[11] = 0;
+        o[12] = t[0];
+        o[13] = t[1];
+        o[14] = t[2];
+        o[15] = 1;
+
+        return o;
     },
 
     /** J'avoue celle la je l'ai copiee
